@@ -34,29 +34,33 @@ for dossier in liste_acquisitions:
     if dossier[:5] == 'n4=1.':
         liste_propre.append(dossier)
 
-biais_R_carre = [['condition testée',
-                 'Moyenne biais absolu signé (nm)', 'Min biais absolu signé (nm)', 'Max biais absolu signé (nm)',
-                 'Moyenne biais relatif signé (%)', 'Min biais relatif signé (%)', 'Max biais relatif signé (%)',
-                 'Moyenne biais absolu absolu (nm)', 'Min biais absolu absolu (nm)', 'Max biais absolu absolu (nm)',
-                 'Moyenne biais relatif absolu (%)', 'Min biais relatif absolu (%)', 'Max biais relatif absolu (%)',
-                 'R²']]
+# biais_R_carre = [['condition testée',
+#                 'Moyenne biais absolu signé (nm)', 'Min biais absolu signé (nm)', 'Max biais absolu signé (nm)',
+#                 'Moyenne biais relatif signé (%)', 'Min biais relatif signé (%)', 'Max biais relatif signé (%)',
+#                 'Moyenne biais absolu absolu (nm)', 'Min biais absolu absolu (nm)', 'Max biais absolu absolu (nm)',
+#                 'Moyenne biais relatif absolu (%)', 'Min biais relatif absolu (%)', 'Max biais relatif absolu (%)',
+#                 'R²']]
+biais_R_carre = []
 
 for reconstruction in range(len(liste_propre)):
     print(liste_propre[reconstruction])
     liste_csv = []
     calcul_biais = []
+    mesures_RSB_ad_hoc = []
     chemin_csv = path + '\\' + liste_propre[reconstruction] + '\\Synthese\\synthese_interferometric_data.csv'
     with open(chemin_csv, mode='r', newline='', encoding='utf-8') as fichier_csv:
         lecteur_csv = csv.reader(fichier_csv, delimiter=';')
         for ligne in lecteur_csv:
             liste_csv.append(ligne)
     for i in range(len(liste_csv) - 1):
-        if not(liste_csv[i + 1][0] in exclusions) and (mesure_RSB[i] > seuil_epaisseur_RSB) and (liste_csv[i + 1][4] != 'nan'):
+        if not(liste_csv[i + 1][0] in exclusions) and (mesures_RSB[i] > seuil_epaisseur_RSB) and (liste_csv[i + 1][4] != 'nan'):
+            mesures_RSB_ad_hoc.append(mesures_RSB[i])
             biais_absolu_signe = float(mesures_RSB[i] - float(liste_csv[i + 1][4]))
             biais_relatif_signe = biais_absolu_signe*100/mesures_RSB[i]
             biais_absolu_absolu = abs(biais_absolu_signe)
             biais_relatif_absolu = biais_absolu_absolu*100/mesures_RSB[i]
             calcul_biais.append([float(liste_csv[i + 1][4]), biais_absolu_signe, biais_relatif_signe, biais_absolu_absolu, biais_relatif_absolu])
+    calcul_biais = np.asarray(calcul_biais)
     moyenne_biais_absolu_signe = np.mean(calcul_biais[:,1])
     moyenne_biais_relatif_signe = np.mean(calcul_biais[:,2])
     moyenne_biais_absolu_absolu = np.mean(calcul_biais[:,3])
@@ -69,10 +73,13 @@ for reconstruction in range(len(liste_propre)):
     max_biais_absolu_absolu = np.max(calcul_biais[:,3])
     min_biais_relatif_absolu = np.min(calcul_biais[:,4])
     max_biais_relatif_absolu = np.max(calcul_biais[:,4])
-    r_carre = R_carre(mesures_RSB, calcul_biais[:,0])
+    r_carre = R_carre(mesures_RSB_ad_hoc, calcul_biais[:,0])
     biais_R_carre.append([liste_propre[reconstruction],
                           moyenne_biais_absolu_signe, min_biais_absolu_signe, max_biais_absolu_signe,
                           moyenne_biais_relatif_signe, min_biais_relatif_signe, max_biais_relatif_signe,
                           moyenne_biais_absolu_absolu, min_biais_absolu_absolu, max_biais_absolu_absolu,
                           moyenne_biais_relatif_absolu, min_biais_relatif_absolu, max_biais_relatif_absolu,
                           r_carre])
+
+biais_R_carre = np.asarray(biais_R_carre)
+resultat = biais_R_carre

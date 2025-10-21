@@ -108,15 +108,18 @@ def RMS(liste1, liste2):
 def R_carre(liste1, liste2):
     liste1_sans_nan = []
     liste2_sans_nan = []
+    if len(liste1) != len(liste2):
+        print('les listes ne sont pas de même taille : ', len(liste1), 'et', len(liste2))
+        return
     for i in range(len(liste1)):
         if not (np.isnan(liste2[i])):
             liste1_sans_nan.append(liste1[i])
             liste2_sans_nan.append(liste2[i])
     liste1_sans_nan = np.asarray(liste1_sans_nan)
     liste2_sans_nan = np.asarray(liste2_sans_nan)
-    print('liste1_sans_nan = \n', liste1_sans_nan)
+    # print('liste1_sans_nan = \n', liste1_sans_nan)
     x = liste1_sans_nan.reshape(-1, 1)
-    print('liste1_sans_nan.reshape = \n', x)
+    # print('liste1_sans_nan.reshape = \n', x)
     model = LinearRegression()
     model.fit(x, liste2_sans_nan)
     y_pred = model.predict(x)
